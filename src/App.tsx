@@ -12,20 +12,28 @@ interface IPost {
 
 interface IState {
   posts: IPost[];
+  error: string;
 }
 
 class App extends React.Component<{}, IState> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      posts: []
+      posts: [],
+      error: ''
     };
   }
 
   public componentDidMount() {
-    axios.get<IPost[]>('https://jsonplaceholder.typicode.com/posts').then(response => {
-      this.setState({ posts: response.data });
-    });
+    axios
+      .get<IPost[]>('https://jsonplaceholder.typicode.com/postsX')
+      .then(response => {
+        this.setState({ posts: response.data });
+      })
+      .catch(ex => {
+        const error = ex.response.status === 404 ? 'Resource not found' : 'An unexpected error has occurred';
+        this.setState({ error });
+      });
   }
 
   public render() {
@@ -39,6 +47,7 @@ class App extends React.Component<{}, IState> {
             </li>
           ))}
         </ul>
+        {this.state.error && <p className='error'>{this.state.error}</p>}
       </div>
     );
   }
