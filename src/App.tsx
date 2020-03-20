@@ -26,12 +26,22 @@ class App extends React.Component<{}, IState> {
 
   public componentDidMount() {
     axios
-      .get<IPost[]>('https://jsonplaceholder.typicode.com/postsX')
+      .get<IPost[]>('https://jsonplaceholder.typicode.com/posts', {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        timeout: 5000
+      })
       .then(response => {
         this.setState({ posts: response.data });
       })
       .catch(ex => {
-        const error = ex.response.status === 404 ? 'Resource not found' : 'An unexpected error has occurred';
+        const error =
+          ex.code === 'ECONNABORTED'
+            ? 'A timeout has occurred'
+            : ex.response.status === 404
+            ? 'Resource not found'
+            : 'An unexpected error has occurred';
         this.setState({ error });
       });
   }
