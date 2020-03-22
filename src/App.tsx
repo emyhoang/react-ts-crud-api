@@ -14,6 +14,7 @@ interface IState {
   error: string;
   cancelTokenSource?: CancelTokenSource;
   loading: boolean;
+  editPost: IPost;
 }
 
 class App extends React.Component<{}, IState> {
@@ -22,7 +23,12 @@ class App extends React.Component<{}, IState> {
     this.state = {
       posts: [],
       error: '',
-      loading: true
+      loading: true,
+      editPost: {
+        body: '',
+        title: '',
+        userId: 1
+      }
     };
   }
 
@@ -55,15 +61,19 @@ class App extends React.Component<{}, IState> {
     // cancelTokenSource.cancel('User cancelled operation');
   }
 
-  private handleCancelClick() {
-    if (this.state.cancelTokenSource) {
-      this.state.cancelTokenSource.cancel('User cancelled operation');
-    }
-  }
-
   public render() {
     return (
       <div className='App'>
+        <div className='post-edit'>
+          <input
+            type='textarea'
+            placeholder='Enter title'
+            value={this.state.editPost.title}
+            onChange={this.handleTitleChange}
+          />
+          <textarea placeholder='Enter body' value={this.state.editPost.body} onChange={this.handleBodyChange} />
+          <button onClick={this.handleSaveClick}>Save</button>
+        </div>
         {this.state.loading && <button onClick={this.handleCancelClick}>Cancel</button>}
         <ul className='posts'>
           {this.state.posts.map(post => (
@@ -77,6 +87,46 @@ class App extends React.Component<{}, IState> {
       </div>
     );
   }
+
+  private handleCancelClick() {
+    if (this.state.cancelTokenSource) {
+      this.state.cancelTokenSource.cancel('User cancelled operation');
+    }
+  }
+
+  private handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({
+      editPost: { ...this.state.editPost, title: e.currentTarget.value }
+    });
+  };
+
+  private handleBodyChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    this.setState({
+      editPost: { ...this.state.editPost, body: e.currentTarget.value }
+    });
+  };
+
+  private handleSaveClick = () => {
+    axios
+      .post<IPost>(
+        'https://jsonplaceholder.typicode.com/posts',
+        {
+          body: this.state.editPost.body,
+          title: this.state.editPost.title,
+          userId: this.state.editPost.userId
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+      .then(response => {
+        this.setState({
+          posts: this.state.posts.concat(response.data)
+        });
+      });
+  };
 }
 
 export default App;
