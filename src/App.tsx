@@ -27,7 +27,7 @@ const App: React.SFC = () => {
     CancelTokenSource,
     (cancelSourceToken: CancelTokenSource) => void
   ] = React.useState(cancelToken.source());
-  const [loading, setLoading]: [boolean, (loading: boolean) => void] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
   const [editPost, setEditPost]: [IPost, (post: IPost) => void] = React.useState({ body: '', title: '', userId: 1 });
 
   React.useEffect(() => {
